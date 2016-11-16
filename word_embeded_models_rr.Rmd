@@ -68,6 +68,7 @@ Interestingly, wool is absent from this above list. Similarly, "sheep" is absent
 rr_model %>% nearest_to(rr_model[["wool"]], 20)
 ```
 
+
 Despite the fact that wool and sheep seem unrelated based upon the similarity searching, they do have a fairly high cosine similarity score (0.38). 
 ```{r}
 cosineSimilarity(rr_model[[c("sheep"),average=F]], rr_model[[c("wool"), average=F]])
@@ -81,21 +82,38 @@ cosineSimilarity(rr_model[[c("cows"),average=F]], rr_model[[c("hides"), average=
 Thus, the classic king - man + women = queen example should work for sheep and cows. Wool - sheep + cow = hide. 
 
 ```{r}
-rr_model %>% nearest_to(rr_model[["wool"]] - rr_model[[c("sheep")]] + rr_model[["cow"]])
+rr_model %>% nearest_to(rr_model[["wool"]] - rr_model[[c("sheep")]] + rr_model[["cow"]], 25)
+```
+
+```{r}
+rr_model %>% nearest_to(rr_model[["sheep"]] - rr_model[[c("wool")]] + rr_model[["hide"]])
+```
+```{r}
+rr_model[["wool"]] - rr_model[[c("sheep")]] + rr_model[["cow"]]
 ```
 
 
+
+
 ```{r}
-#animals = nearest_to(rr_model, rr_model[[c("sheep", "swine", "hogs", "goats", "cattle", "cows", "pigs", "mules", "calves")]], 150)
+rr_model %>% nearest_to(rr_model[["cloth"]], 50)
+
+non_perishable = nearest_to(rr_model, rr_model[[c("cotton", "lumber", "cement", "coal", "iron", "steel", "shingles", "lime", "turpentine", "petroleum", "fertilizer", "salt", "leather")]], 150)
+
+living_cargo = nearest_to(rr_model, rr_model[[c("sheep", "swine", "hogs", "goats", "cattle", "cows", "pigs", "mules", "calves")]], 150)
+
+non_living_cargo = nearest_to(rr_model, rr_model[[c("wool", "hides", "meat", "cheese", "grain", "potatoes", "hay", "cotton", "four", "leather", "hops", "fruit", "vegetables", "sugar", "canned", "eggs", "stuffs", "dried", "groceries", "canned")]], 150)
                      
+lifelike = model[[names(living_cargo), average =F]]
+lifeless = model[[names(non_living_cargo), average =F]]
 
 #some_fish = nearest_to(model,model[[c("fish","salmon","trout","shad","flounder","carp","roe","eels")]],150)
 #fishy = model[[names(some_fish),average=F]]
 ```
 
+#Clustering
 
-
-Simply plotting the model shows some interesting clusters. For example, the words "negligence, "injury," "damage," "jury," and "defendent" are all clustered together.
+Simply plotting the model shows some interesting clusters. For example, the words "negligence, "injury," "damage," "jury," and "defendent" are all clustered together. As are
 ```{r}
 plot(rr_model)
 ```
@@ -105,4 +123,8 @@ rr_model %>% nearest_to(rr_model[["injury"]])
 ```
 
 
+
+```{r}
+chronam_vectors = read.vectors(pipe("gunzip -c ~/Dropbox/rmp2vec/shorter_chronam.txt.gz"),nrow=50000,vectors = 500)
+```
 
