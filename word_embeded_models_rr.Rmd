@@ -1,0 +1,108 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+#Word Embeded Models
+
+This notebook will use word embeded models to explore the corpus of railroad law.Given the relatively small size and narrow focus of the corpus, I am going to test the usefulness of word embeded models on such a corpus.
+```{r}
+library(text2vec)
+library(magrittr)
+library(wordVectors)
+library(tsne)
+```
+
+```{r}
+#prep_word2vec("C:/Users/Joshua/Documents/rdata/railroaddata/railroads_documents","rr_docs.txt",lowercase=T) 
+
+```
+
+```{r}
+# rr_model = train_word2vec("rr_docs.txt",output="rr_doc_vectors.bin",threads = 6,vectors = 100,window=12)
+```
+Since I created the vector space model of railroad law previously, I simply read in this model.This saves an great deal of time as the creation of the model took well over an hour for 397 documents. 
+```{r}
+rr_model = read.vectors("rr_doc_vectors.bin")
+```
+###Similarity Searching
+The first method of exploration I used was similarity searching.To demonstrate one challenge to using this method, I chose the word "buffalo." As shown below, this returned a list of mostly cities, but I was interested in the animal.Therefore, I need to perform some addition and subtraction on my word vectors.
+```{r}
+rr_model %>% nearest_to(rr_model[["buffalo"]])
+```
+
+
+Attempting to subtract the cities from the list did not return my desired outcome. 
+```{r}
+rr_model %>% nearest_to(rr_model[["buffalo"]] - rr_model[[c("ontario","rochester")]])
+
+```
+Attempting to add "cattle" removed the cities but did not yield very interesting results. 
+```{r}
+rr_model %>% nearest_to(rr_model[["buffalo"]] - rr_model[[c("ontario","rochester")]] + rr_model[["cattle"]])
+```
+Therefore, I looked at the similarity between "buffalo" and "cattle" and found that they are not very similar (.0098 cosine similarity).
+```{r}
+cosineSimilarity(rr_model[[c("buffalo"),average=F]], rr_model[[c("cattle"), average=F]])
+
+```
+I need to use a different approach. Below I used the reject function to attempt to filter out unwanted definitions/meanings/semantics of "buffalo." As the results show, this was also not effective. "Buffalo" the animal is not used enough in the context of an animal in this corpus. 
+```{r}
+not_that_kind_of_buffalo = rr_model[["buffalo"]] %>%
+      reject(rr_model[["city"]]) %>% 
+      reject(rr_model[["rochester"]]) %>%   
+      reject(rr_model[["ontario"]])%>%   
+      reject(rr_model[["utica"]]) 
+
+rr_model %>% nearest_to(not_that_kind_of_buffalo)
+```
+
+Now I will take a look at another example.
+Looking at the word "sheep" reveals that the animals included in the corpus are types of cargo. 
+```{r}
+rr_model %>% nearest_to(rr_model[["sheep"]], 20)
+```
+Interestingly, wool is absent from this above list. Similarly, "sheep" is absent from the similarity search for "wool."
+
+```{r}
+rr_model %>% nearest_to(rr_model[["wool"]], 20)
+```
+
+Despite the fact that wool and sheep seem unrelated based upon the similarity searching, they do have a fairly high cosine similarity score (0.38). 
+```{r}
+cosineSimilarity(rr_model[[c("sheep"),average=F]], rr_model[[c("wool"), average=F]])
+```
+The same is true for hides/cows (0.35).
+```{r}
+cosineSimilarity(rr_model[[c("cows"),average=F]], rr_model[[c("hides"), average=F]])
+
+```
+
+Thus, the classic king - man + women = queen example should work for sheep and cows. Wool - sheep + cow = hide. 
+
+```{r}
+rr_model %>% nearest_to(rr_model[["wool"]] - rr_model[[c("sheep")]] + rr_model[["cow"]])
+```
+
+
+```{r}
+#animals = nearest_to(rr_model, rr_model[[c("sheep", "swine", "hogs", "goats", "cattle", "cows", "pigs", "mules", "calves")]], 150)
+                     
+
+#some_fish = nearest_to(model,model[[c("fish","salmon","trout","shad","flounder","carp","roe","eels")]],150)
+#fishy = model[[names(some_fish),average=F]]
+```
+
+
+
+Simply plotting the model shows some interesting clusters. For example, the words "negligence, "injury," "damage," "jury," and "defendent" are all clustered together.
+```{r}
+plot(rr_model)
+```
+Similarity searching confirms the existence of this cluster.
+```{r}
+rr_model %>% nearest_to(rr_model[["injury"]])
+```
+
+
+
