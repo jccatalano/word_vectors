@@ -12,6 +12,7 @@ library(magrittr)
 library(wordVectors)
 library(tsne)
 library(ggplot2)
+library(tibble)
 ```
 
 ```{r}
@@ -93,8 +94,9 @@ rr_model %>% nearest_to(rr_model[["sheep"]] - rr_model[[c("wool")]] + rr_model[[
 rr_model[["wool"]] - rr_model[[c("sheep")]] + rr_model[["cow"]]
 ```
 
+###Plotting Characteristics
 
-
+Below I experimented with the informaiton gathered in the examples above. One thing that I noticed was that "sheep" was part of a group of animals (but not "buffalo") and that "wool" was part of a commodity. So, I further explored these different types of cargo (living/nonliving) and further divided them as perishable/non perishable. 
 
 ```{r}
 rr_model %>% nearest_to(rr_model[["eggs"]], 50)
@@ -110,7 +112,7 @@ non_living_cargo = nearest_to(rr_model, rr_model[[c("wool", "hides", "meat", "ch
 lifelike = model[[names(living_cargo), average =F]]
 lifeless = model[[names(non_living_cargo), average =F]]
 
-cargo_words = c("eggs", "butter", "vegetables", "asparagus", "cheese", "lettuce", "potatoes", "peas", "margarine", "oranges", "beans", "beef", "lemons", "beeries", "cabbage", "peaches", "peaches", "apples", "cotton", "lumber", "cement", "coal", "iron", "steel", "shingles", "lime", "turpentine", "petroleum", "fertilizer", "salt", "leather")
+cargo_words = c("eggs", "butter", "vegetables", "asparagus", "cheese", "lettuce", "potatoes", "peas", "margarine", "oranges", "beans", "beef", "lemons", "beeries", "cabbage", "peaches", "peaches", "apples", "cotton", "lumber", "cement", "coal", "iron", "steel", "shingles", "lime", "turpentine", "petroleum", "fertilizer", "salt", "leather", "wool", "hides", "meat", "cheese", "grain", "potatoes", "hay", "cotton", "four", "leather", "hops", "fruit", "vegetables", "sugar", "canned", "eggs", "stuffs", "dried", "groceries", "canned", "sheep", "swine", "hogs", "goats", "cattle", "cows", "pigs", "mules", "calves", "poultry")
 
 cargo = rr_model[rownames(rr_model) %in% cargo_words, ]
 
@@ -118,14 +120,32 @@ perishable_score = cargo %>% cosineSimilarity(rr_model[[c("eggs", "butter", "veg
 
 non_perishable_score = cargo %>% cosineSimilarity(rr_model[[c("cotton", "lumber", "cement", "coal", "iron", "steel", "shingles", "lime", "turpentine", "petroleum", "fertilizer", "salt", "leather")]])
 
-plot(perishable_score,non_perishable_score,type='n',main="Top 300 cargo words plotted by their similarity to perishable\n(x axis) and non perishable (y axis).")
-text(perishable_score,non_perishable_score,labels=rownames(cargo),cex=.7) 
-abline(a=0,b=1)
+non_living_score = cargo %>% cosineSimilarity(rr_model[[c("wool", "hides", "meat", "cheese", "grain", "potatoes", "hay", "cotton", "four", "leather", "hops", "fruit", "vegetables", "sugar", "canned", "eggs", "stuffs", "dried", "groceries", "canned")]])
+                                              
+living_score = cargo %>% cosineSimilarity(rr_model[[c("sheep", "swine", "hogs", "goats", "cattle", "cows", "pigs", "mules", "calves", "poultry")]]) 
+
+dfpvnp <- data_frame(x = perishable_score[, 1], y = non_perishable_score[, 1], labels = rownames(cargo))
+
+dflvnl <- data_frame(x = living_score[, 1], y = non_living_score[, 1], labels = rownames(cargo))
+
+
+#plot(perishable_score,non_perishable_score,type='n',main="Top 300 cargo words plotted by their similarity to perishable\n(x axis) and non perishable (y axis).")
+#text(perishable_score,non_perishable_score,labels=rownames(cargo),cex=.7) 
+#abline(a=0,b=1)
 
 #some_fish = nearest_to(model,model[[c("fish","salmon","trout","shad","flounder","carp","roe","eels")]],150)
 #fishy = model[[names(some_fish),average=F]]
 ```
+Below is a plot of perishable(ness).
+```{r}
+ggplot (dfpvnp, aes(x, y, label = labels)) + geom_text() + geom_point() + coord_equal() + xlab("Perishable Score") + ylab("Non Perishable Score") + ggtitle("Perishable(ness)") + geom_abline(intercept = 0, slope = 1)
 
+```
+
+Living vs Non living
+```{r}
+ggplot (dflvnl, aes(x, y, label = labels)) + geom_text() + geom_point() + coord_equal() + xlab("Living Score") + ylab("Not Living Score") + ggtitle("Alive(ness)") 
+```
 
 
 #Clustering
