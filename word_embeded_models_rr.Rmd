@@ -11,6 +11,7 @@ library(text2vec)
 library(magrittr)
 library(wordVectors)
 library(tsne)
+library(ggplot2)
 ```
 
 ```{r}
@@ -96,24 +97,40 @@ rr_model[["wool"]] - rr_model[[c("sheep")]] + rr_model[["cow"]]
 
 
 ```{r}
-rr_model %>% nearest_to(rr_model[["cloth"]], 50)
+rr_model %>% nearest_to(rr_model[["eggs"]], 50)
+
+perishable = nearest_to(rr_model, rr_model[[c("eggs", "butter", "vegetables", "asparagus", "cheese", "lettuce", "potatoes", "peas", "margarine", "oranges", "beans", "beef", "lemons", "beeries", "cabbage", "peaches", "peaches", "apples")]], 150)
 
 non_perishable = nearest_to(rr_model, rr_model[[c("cotton", "lumber", "cement", "coal", "iron", "steel", "shingles", "lime", "turpentine", "petroleum", "fertilizer", "salt", "leather")]], 150)
 
-living_cargo = nearest_to(rr_model, rr_model[[c("sheep", "swine", "hogs", "goats", "cattle", "cows", "pigs", "mules", "calves")]], 150)
+living_cargo = nearest_to(rr_model, rr_model[[c("sheep", "swine", "hogs", "goats", "cattle", "cows", "pigs", "mules", "calves", "poultry")]], 150)
 
 non_living_cargo = nearest_to(rr_model, rr_model[[c("wool", "hides", "meat", "cheese", "grain", "potatoes", "hay", "cotton", "four", "leather", "hops", "fruit", "vegetables", "sugar", "canned", "eggs", "stuffs", "dried", "groceries", "canned")]], 150)
                      
 lifelike = model[[names(living_cargo), average =F]]
 lifeless = model[[names(non_living_cargo), average =F]]
 
+cargo_words = c("eggs", "butter", "vegetables", "asparagus", "cheese", "lettuce", "potatoes", "peas", "margarine", "oranges", "beans", "beef", "lemons", "beeries", "cabbage", "peaches", "peaches", "apples", "cotton", "lumber", "cement", "coal", "iron", "steel", "shingles", "lime", "turpentine", "petroleum", "fertilizer", "salt", "leather")
+
+cargo = rr_model[rownames(rr_model) %in% cargo_words, ]
+
+perishable_score = cargo %>% cosineSimilarity(rr_model[[c("eggs", "butter", "vegetables", "asparagus", "cheese", "lettuce", "potatoes", "peas", "margarine", "oranges", "beans", "beef", "lemons", "beeries", "cabbage", "peaches", "peaches", "apples")]])
+
+non_perishable_score = cargo %>% cosineSimilarity(rr_model[[c("cotton", "lumber", "cement", "coal", "iron", "steel", "shingles", "lime", "turpentine", "petroleum", "fertilizer", "salt", "leather")]])
+
+plot(perishable_score,non_perishable_score,type='n',main="Top 300 cargo words plotted by their similarity to perishable\n(x axis) and non perishable (y axis).")
+text(perishable_score,non_perishable_score,labels=rownames(cargo),cex=.7) 
+abline(a=0,b=1)
+
 #some_fish = nearest_to(model,model[[c("fish","salmon","trout","shad","flounder","carp","roe","eels")]],150)
 #fishy = model[[names(some_fish),average=F]]
 ```
 
+
+
 #Clustering
 
-Simply plotting the model shows some interesting clusters. For example, the words "negligence, "injury," "damage," "jury," and "defendent" are all clustered together. As are
+Simply plotting the model shows some interesting clusters. For example, the words "negligence, "injury," "damage," "jury," and "defendent" are all clustered together.
 ```{r}
 plot(rr_model)
 ```
