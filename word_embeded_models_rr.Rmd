@@ -26,7 +26,7 @@ library(tibble)
 # rr_model = train_word2vec("rr_docs.txt",output="rr_doc_vectors.bin",threads = 6,vectors = 100,window=12)
 ```
 Since I created the vector space model of railroad law previously using the code above, I simply read in this model.This saves an great deal of time as the creation of the model took well over an hour for 397 documents. 
-```{r}
+```{r loading, results="hide"}
 rr_model = read.vectors("rr_doc_vectors.bin")
 ```
 ###Similarity Searching
@@ -159,6 +159,8 @@ Simply plotting the enire railroad model shows some interesting clusters. For ex
 ```{r}
 plot(rr_model)
 ```
+
+
 Similarity searching confirms the existence of this cluster.
 ```{r}
 rr_model %>% nearest_to(rr_model[["injury"]])
