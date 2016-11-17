@@ -144,12 +144,12 @@ ggplot (dfpvnp, aes(x, y, label = labels)) + geom_text() + geom_point() + coord_
 
 Below is a plot of alive(ness). Here the model did pretty well at locating the living animals. It also seperated organic and inorganic materials. 
 ```{r}
-ggplot (dflvnl, aes(x, y, label = labels)) + geom_text() + geom_point() + coord_equal() + xlab("Living Score") + ylab("Not Living Score") + ggtitle("Alive(ness)") 
+ggplot (dflvnl, aes(x, y, label = labels)) + geom_text() + geom_point() + coord_equal() + xlab("Living Score") + ylab("Not Living Score") + ggtitle("Alive(ness)") + geom_abline(slope = 1, intercept = 0)
 ```
 Below is a chart that combines the two sets of variables (living vs non perishable). Again the model does a good job of identifying living animals. It is even a bit unsure of where to place poultry which could refer to a shipment of living or dead chickens. 
 ```{r}
 
-ggplot (dflvnp, aes(x, y, label = labels)) + geom_text() + geom_point() + coord_equal() + xlab("Living Score") + ylab("Not Perishable") + ggtitle("Alive but Not Perishable?") 
+ggplot (dflvnp, aes(x, y, label = labels)) + geom_text() + geom_point() + coord_equal() + xlab("Living Score") + ylab("Not Perishable") + ggtitle("Alive but Not Perishable?") + geom_abline(slope = 1, intercept = -.2)
 
 ```
 
